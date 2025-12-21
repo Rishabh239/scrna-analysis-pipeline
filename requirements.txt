@@ -1,0 +1,41 @@
+# scRNA-seq Analysis Pipeline - Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core single-cell analysis
+scanpy>=1.9.0
+anndata>=0.8.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.23.0
+scipy>=1.9.0
+
+# Machine learning
+scikit-learn>=1.1.0
+joblib>=1.2.0
+
+# Deep learning (optional but recommended)
+tensorflow>=2.10.0
+
+# Class balancing
+imbalanced-learn>=0.10.0
+
+# Visualization
+matplotlib>=3.6.0
+seaborn>=0.12.0
+
+# Enrichment analysis
+gseapy>=1.0.0
+
+# Model interpretability (optional)
+shap>=0.41.0
+
+# Leiden clustering
+leidenalg>=0.9.0
+python-igraph>=0.10.0
+
+# Progress bars
+tqdm>=4.64.0
+
+# Configuration
+pyyaml>=6.0

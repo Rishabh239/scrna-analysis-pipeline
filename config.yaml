@@ -1,0 +1,86 @@
+# scRNA-seq Analysis Pipeline Configuration
+# ==========================================
+
+# Quality Control Parameters
+qc:
+  min_genes: 200        # Minimum genes per cell
+  max_genes: null       # Maximum genes per cell (null = no limit)
+  min_counts: null      # Minimum UMI counts per cell
+  max_counts: 25000     # Maximum UMI counts per cell
+  max_mt_pct: 5.0       # Maximum mitochondrial gene percentage
+  min_cells: 3          # Minimum cells per gene
+
+# Normalization Parameters
+normalization:
+  target_sum: 10000     # Target sum for normalization
+  log_transform: true   # Apply log1p transformation
+
+# Highly Variable Genes
+hvg:
+  min_mean: 0.0125
+  max_mean: 3.0
+  min_disp: 0.5
+
+# Dimensionality Reduction
+pca:
+  n_comps: 50           # Number of principal components
+  svd_solver: 'arpack'
+
+# Clustering
+clustering:
+  n_neighbors: 10       # Number of neighbors for KNN graph
+  n_pcs: 40             # Number of PCs for neighbor calculation
+  resolution: 0.5       # Leiden resolution parameter
+
+# Cell Type Mapping (cluster -> cell type)
+# Customize based on your dataset and marker genes
+cell_types:
+  "0": "T cells"
+  "1": "B cells"
+  "2": "Macrophages"
+  "3": "Dendritic cells"
+  "4": "NK cells"
+  "5": "Monocytes"
+  "6": "Plasma cells"
+  "7": "Progenitor cells"
+
+# Machine Learning Parameters
+ml:
+  test_size: 0.2
+  random_state: 42
+  use_smote: true
+  
+  # Random Forest
+  random_forest:
+    n_estimators: 100
+    max_depth: null
+    min_samples_split: 2
+  
+  # SVM
+  svm:
+    kernel: 'linear'
+    n_pca_components: 50
+  
+  # Neural Network
+  neural_network:
+    epochs: 50
+    batch_size: 32
+    early_stopping_patience: 10
+
+# Enrichment Analysis
+enrichment:
+  n_genes: 100          # Number of genes per cluster
+  organism: 'human'
+  go_gene_set: 'GO_Biological_Process_2021'
+  kegg_gene_set: 'KEGG_2021_Human'
+
+# Output Directories
+output:
+  results_dir: 'results'
+  models_dir: 'models'
+  plots_dir: 'results/plots'
+
+# Logging
+logging:
+  level: 'INFO'
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
