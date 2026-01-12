@@ -3,6 +3,7 @@
 A comprehensive Python pipeline for analyzing single-cell RNA sequencing (scRNA-seq) data, featuring preprocessing, clustering, differential expression analysis, pathway enrichment, and machine learning-based cell type classification.
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 ![Scanpy](https://img.shields.io/badge/Scanpy-1.9%2B-orange)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.0%2B-red)
 
@@ -16,7 +17,7 @@ This pipeline processes 10x Genomics single-cell RNA-seq data through a complete
 4. **Dimensionality Reduction** - PCA, UMAP, and t-SNE visualization
 5. **Clustering** - Leiden algorithm for cell population identification
 6. **Differential Expression** - Identify marker genes for each cluster
-7. **Pathway Analysis** - GO and KEGG enrichment analysis
+7. **Pathway Analysis** - GO and KEGG enrichment analysis with heatmaps
 8. **Cell Type Classification** - ML models (Random Forest, SVM, Neural Network)
 
 ## 🏗️ Project Structure
@@ -30,24 +31,22 @@ scrna-analysis-pipeline/
 ├── config.yaml
 ├── src/
 │   ├── __init__.py
-│   ├── data_loader.py       # Load 10x Genomics data
-│   ├── preprocessing.py     # QC, normalization, clustering
-│   ├── differential_expression.py  # Marker gene analysis
-│   ├── enrichment.py        # GO and KEGG pathway analysis
-│   ├── classification.py    # ML cell type classification
-│   ├── visualization.py     # Plotting functions
-│   ├── utils.py             # Utility functions
-│   └── cli.py               # Command-line interface
+│   ├── data_loader.py          # Load 10x Genomics data
+│   ├── preprocessing.py        # QC, normalization, clustering
+│   ├── differential_expression.py   # Marker gene analysis
+│   ├── enrichment.py           # GO and KEGG pathway analysis
+│   ├── classification.py       # ML cell type classification
+│   └── cli.py                  # Command-line interface
 ├── data/
 │   └── filtered_feature_bc_matrix/  # Place your 10x data here
 │       ├── barcodes.tsv.gz
 │       ├── features.tsv.gz
 │       └── matrix.mtx.gz
-├── models/                  # Saved ML models
-├── results/                 # Output plots and files
-├── tests/                   # Unit tests
-├── docs/                    # Documentation
-└── examples/                # Example notebooks
+├── models/                     # Saved ML models
+├── results/                    # Output plots and files
+├── tests/                      # Unit tests
+├── docs/                       # Documentation
+└── examples/                   # Example notebooks
 ```
 
 ## 🚀 Quick Start
@@ -56,7 +55,7 @@ scrna-analysis-pipeline/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/scrna-analysis-pipeline.git
+git clone https://github.com/Rishabh239/scrna-analysis-pipeline.git
 cd scrna-analysis-pipeline
 
 # Create virtual environment (recommended)
@@ -69,10 +68,13 @@ pip install -r requirements.txt
 
 ### Prepare Your Data
 
-1. Download or obtain your 10x Genomics data (e.g., from [10x Genomics datasets](https://www.10xgenomics.com/resources/datasets))
+1. Download your 10x Genomics data (e.g., from [10x Genomics datasets](https://www.10xgenomics.com/resources/datasets))
 2. Extract the `.tar.gz` file:
    ```bash
+   # Linux/Mac
    tar -xvzf your_data.tar.gz -C data/
+   
+   # Windows: Use 7-Zip to extract to data/ folder
    ```
 3. Ensure the following files are in `data/filtered_feature_bc_matrix/`:
    - `barcodes.tsv.gz`
@@ -82,8 +84,8 @@ pip install -r requirements.txt
 ### Run the Pipeline
 
 ```bash
-# Run complete pipeline
-python -m src.cli run --input data/filtered_feature_bc_matrix --output results/
+# Run complete pipeline (preprocessing + enrichment + classification)
+python -m src.cli run --input data/filtered_feature_bc_matrix --output results/ --annotate --classify
 
 # Run only preprocessing
 python -m src.cli preprocess --input data/filtered_feature_bc_matrix --output results/
@@ -91,29 +93,42 @@ python -m src.cli preprocess --input data/filtered_feature_bc_matrix --output re
 # Run only classification (requires preprocessed data)
 python -m src.cli classify --input results/preprocessed.h5ad --output results/
 
-# Train ML models
-python -m src.cli train --input results/preprocessed.h5ad --model-dir models/
+# Predict cell types with trained model
+python -m src.cli predict --input new_data.h5ad --model-dir models/ --output predictions.csv
 ```
 
 ### Python API
 
 ```python
 from src.data_loader import load_10x_data
-from src.preprocessing import preprocess_adata, run_clustering
+from src.preprocessing import ScRNAPreprocessor
+from src.differential_expression import DifferentialExpression
+from src.enrichment import EnrichmentAnalyzer
 from src.classification import CellTypeClassifier
 
 # Load data
 adata = load_10x_data("data/filtered_feature_bc_matrix")
 
 # Preprocess
-adata = preprocess_adata(adata)
+preprocessor = ScRNAPreprocessor(results_dir="results/")
+adata = preprocessor.run_full_pipeline(adata)
 
-# Cluster and visualize
-adata = run_clustering(adata)
+# Find marker genes
+de = DifferentialExpression(results_dir="results/")
+adata = de.find_marker_genes(adata)
+
+# Run enrichment analysis
+enrichment = EnrichmentAnalyzer(results_dir="results/enrichment/")
+cluster_results = enrichment.run_enrichment_all_clusters(adata, n_genes=100)
+enrichment.create_enrichment_heatmap(cluster_results, 'go')
+enrichment.create_enrichment_heatmap(cluster_results, 'kegg')
 
 # Train classifier
 classifier = CellTypeClassifier()
-classifier.train(adata)
+classifier.train(adata, model_type='all')
+classifier.save_model('cell_classifier')
+
+# Predict on new data
 predictions = classifier.predict(new_adata)
 ```
 
@@ -149,7 +164,8 @@ Filters cells based on:
 
 - **GO Biological Process**: Gene Ontology analysis
 - **KEGG Pathways**: Metabolic and signaling pathways
-- Cross-cluster heatmaps for comparison
+- **Heatmaps**: Cross-cluster enrichment comparison
+- **Bar Charts**: Top enriched terms per cluster
 
 ### 6. Machine Learning Classification
 
@@ -172,53 +188,91 @@ filtered_feature_bc_matrix/
 
 ## 📤 Output Files
 
-### Preprocessed Data
-- `preprocessed.h5ad` - Scanpy AnnData object with all analyses
+After running the full pipeline, you'll get:
 
-### Visualizations (in `results/`)
-- `umap_leiden.png` - UMAP colored by cluster
-- `umap_cell_type.png` - UMAP colored by cell type
-- `tsne_leiden.png` - t-SNE visualization
-- `pca_variance_ratio.png` - PCA explained variance
-- `rank_genes.png` - Top marker genes per cluster
-
-### Enrichment Results
-- `GO_enrichment_results_cluster_X.csv` - GO terms per cluster
-- `KEGG_enrichment_results_cluster_X.csv` - KEGG pathways per cluster
-- `go_heatmap.png` - GO enrichment heatmap
-- `kegg_heatmap.png` - KEGG enrichment heatmap
-
-### ML Models (in `models/`)
-- `cell_classifier.h5` - Trained neural network
-- `scaler.pkl` - Feature scaler
-- `label_encoder.pkl` - Cell type label encoder
-- `confusion_matrix.png` - Model performance
-- `shap_summary.png` - Feature importance (SHAP)
+```
+results/
+├── preprocessing/
+│   ├── qc_metrics_before.png       # QC violin plots before filtering
+│   ├── qc_metrics_after.png        # QC violin plots after filtering
+│   ├── pca_variance_ratio.png      # PCA explained variance
+│   ├── umap_leiden.png             # UMAP colored by cluster
+│   ├── umap_cell_type.png          # UMAP colored by cell type
+│   └── tsne_leiden.png             # t-SNE visualization
+│
+├── differential_expression/
+│   ├── marker_genes.csv            # Top marker genes per cluster
+│   └── rank_genes_marker_genes.png # Marker gene visualization
+│
+├── enrichment/
+│   ├── GO_enrichment_cluster_0.csv     # GO results for cluster 0
+│   ├── GO_enrichment_cluster_1.csv     # GO results for cluster 1
+│   ├── KEGG_enrichment_cluster_0.csv   # KEGG results for cluster 0
+│   ├── KEGG_enrichment_cluster_1.csv   # KEGG results for cluster 1
+│   ├── go_heatmap.png                  # GO enrichment heatmap (all clusters)
+│   ├── kegg_heatmap.png                # KEGG enrichment heatmap (all clusters)
+│   ├── go_enrichment_cluster_0.png     # GO bar chart for cluster 0
+│   ├── go_enrichment_cluster_1.png     # GO bar chart for cluster 1
+│   ├── kegg_enrichment_cluster_0.png   # KEGG bar chart for cluster 0
+│   └── kegg_enrichment_cluster_1.png   # KEGG bar chart for cluster 1
+│
+├── classification/
+│   ├── confusion_matrix_random_forest.png
+│   ├── confusion_matrix_svm.png
+│   ├── confusion_matrix_neural_network.png
+│   ├── training_history.png            # Neural network training curves
+│   └── shap_summary_random_forest.png  # Feature importance (SHAP)
+│
+├── models/
+│   ├── cell_classifier_random_forest.pkl
+│   ├── cell_classifier_svm.pkl
+│   ├── cell_classifier_neural_network.h5
+│   ├── cell_classifier_scaler.pkl
+│   ├── cell_classifier_label_encoder.pkl
+│   └── cell_classifier_pca.pkl
+│
+└── processed_data.h5ad                 # Complete processed dataset
+```
 
 ## ⚙️ Configuration
 
 Edit `config.yaml` to customize parameters:
 
 ```yaml
+# Quality Control
 qc:
   min_genes: 200
   max_counts: 25000
   max_mt_pct: 5
 
+# Clustering
 clustering:
   n_neighbors: 10
   n_pcs: 40
   resolution: 0.5
 
-classification:
+# Machine Learning
+ml:
   test_size: 0.2
-  n_estimators: 100
-  epochs: 50
+  random_state: 42
+  use_smote: true
+  
+  random_forest:
+    n_estimators: 100
+  
+  neural_network:
+    epochs: 50
+    batch_size: 32
+
+# Enrichment Analysis
+enrichment:
+  n_genes: 100
+  organism: 'human'
 ```
 
 ## 🔬 Cell Type Annotation
 
-Default cell type mapping (customize in config):
+Default cell type mapping (customize based on your marker genes):
 
 | Cluster | Cell Type |
 |---------|-----------|
@@ -227,18 +281,28 @@ Default cell type mapping (customize in config):
 | 2 | Macrophages |
 | 3 | Dendritic cells |
 | 4 | NK cells |
+| 5 | Monocytes |
 
-Use marker genes to validate and adjust annotations for your dataset.
+**Note**: Clusters without mappings are automatically labeled as `Unknown_Cluster_X`. Update the mapping in `config.yaml` or `src/cli.py` based on your marker gene analysis.
 
 ## 📚 Dependencies
 
-- **scanpy** - Single-cell analysis
-- **pandas**, **numpy** - Data manipulation
-- **scikit-learn** - Machine learning
-- **tensorflow/keras** - Deep learning
-- **gseapy** - Enrichment analysis
-- **matplotlib**, **seaborn** - Visualization
-- **shap** - Model interpretability
+Core dependencies:
+- **scanpy** >= 1.9.0 - Single-cell analysis
+- **pandas** >= 1.5.0 - Data manipulation
+- **numpy** >= 1.23.0 - Numerical computing
+- **scikit-learn** >= 1.1.0 - Machine learning
+- **tensorflow** >= 2.10.0 - Deep learning
+- **gseapy** >= 1.0.0 - Enrichment analysis
+- **matplotlib** >= 3.6.0 - Visualization
+- **seaborn** >= 0.12.0 - Statistical visualization
+- **shap** >= 0.41.0 - Model interpretability
+- **imbalanced-learn** >= 0.10.0 - SMOTE for class balancing
+
+Install all dependencies:
+```bash
+pip install -r requirements.txt
+```
 
 ## 🤝 Contributing
 
@@ -250,12 +314,23 @@ Contributions are welcome! Please:
 4. Push to branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
 
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
 ## 📖 References
 
 - [Scanpy Documentation](https://scanpy.readthedocs.io/)
 - [10x Genomics](https://www.10xgenomics.com/)
 - [PBMC Dataset](https://www.10xgenomics.com/resources/datasets)
+- [GSEApy Documentation](https://gseapy.readthedocs.io/)
 
 ## ⚠️ Disclaimer
 
 This tool is for research purposes only. Results should be validated by domain experts before biological interpretation or clinical application.
+
+---
+
+**Author**: Rishabh  
+**Institution**: Northeastern University  
+**Field**: Bioinformatics / Computational Biology
