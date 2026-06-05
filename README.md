@@ -1,4 +1,4 @@
-# 🧬 Single-Cell RNA-Seq Analysis Pipeline
+#  Single-Cell RNA-Seq Analysis Pipeline
 
 A comprehensive Python pipeline for analyzing single-cell RNA sequencing (scRNA-seq) data, featuring preprocessing, clustering, differential expression analysis, pathway enrichment, and machine learning-based cell type classification.
 
@@ -7,7 +7,7 @@ A comprehensive Python pipeline for analyzing single-cell RNA sequencing (scRNA-
 ![Scanpy](https://img.shields.io/badge/Scanpy-1.9%2B-orange)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.0%2B-red)
 
-## 📋 Overview
+##  Overview
 
 This pipeline processes 10x Genomics single-cell RNA-seq data through a complete analysis workflow:
 
@@ -20,7 +20,7 @@ This pipeline processes 10x Genomics single-cell RNA-seq data through a complete
 7. **Pathway Analysis** - GO and KEGG enrichment analysis with heatmaps
 8. **Cell Type Classification** - ML models (Random Forest, SVM, Neural Network)
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 scrna-analysis-pipeline/
@@ -49,7 +49,7 @@ scrna-analysis-pipeline/
 └── examples/                   # Example notebooks
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Installation
 
@@ -132,7 +132,7 @@ classifier.save_model('cell_classifier')
 predictions = classifier.predict(new_adata)
 ```
 
-## 📊 Pipeline Stages
+##  Pipeline Stages
 
 ### 1. Quality Control
 
@@ -175,7 +175,7 @@ Filters cells based on:
 | SVM | Support Vector Machine with PCA | High accuracy |
 | Neural Network | Deep learning with regularization | Complex patterns |
 
-## 📁 Input Data Format
+##  Input Data Format
 
 The pipeline expects 10x Genomics **filtered feature-barcode matrix** format:
 
@@ -186,7 +186,7 @@ filtered_feature_bc_matrix/
 └── matrix.mtx.gz      # Sparse expression matrix (Market Matrix format)
 ```
 
-## 📤 Output Files
+##  Output Files
 
 After running the full pipeline, you'll get:
 
@@ -234,7 +234,7 @@ results/
 └── processed_data.h5ad                 # Complete processed dataset
 ```
 
-## ⚙️ Configuration
+##  Configuration
 
 Edit `config.yaml` to customize parameters:
 
@@ -270,7 +270,7 @@ enrichment:
   organism: 'human'
 ```
 
-## 🔬 Cell Type Annotation
+##  Cell Type Annotation
 
 Default cell type mapping (customize based on your marker genes):
 
@@ -285,7 +285,7 @@ Default cell type mapping (customize based on your marker genes):
 
 **Note**: Clusters without mappings are automatically labeled as `Unknown_Cluster_X`. Update the mapping in `config.yaml` or `src/cli.py` based on your marker gene analysis.
 
-## 📚 Dependencies
+##  Dependencies
 
 Core dependencies:
 - **scanpy** >= 1.9.0 - Single-cell analysis
@@ -304,7 +304,7 @@ Install all dependencies:
 pip install -r requirements.txt
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please:
 
@@ -314,18 +314,18 @@ Contributions are welcome! Please:
 4. Push to branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
-## 📖 References
+##  References
 
 - [Scanpy Documentation](https://scanpy.readthedocs.io/)
 - [10x Genomics](https://www.10xgenomics.com/)
 - [PBMC Dataset](https://www.10xgenomics.com/resources/datasets)
 - [GSEApy Documentation](https://gseapy.readthedocs.io/)
 
-## ⚠️ Disclaimer
+##  Disclaimer
 
 This tool is for research purposes only. Results should be validated by domain experts before biological interpretation or clinical application.
 
